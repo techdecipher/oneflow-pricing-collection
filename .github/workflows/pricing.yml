@@ -3,6 +3,10 @@ on:
   schedule: [{ cron: "0 */6 * * *" }]
   workflow_dispatch: {}
 
+concurrency:
+  group: oneflow-refresh
+  cancel-in-progress: false
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -16,9 +20,6 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install deps (none required, but keep for future)
-        run: echo "No deps"
-
       - name: Build data
         run: |
           mkdir -p data/cloud data/hosting data/tools
@@ -30,13 +31,23 @@ jobs:
           # node scripts/fetch-hosting.js
           # node scripts/fetch-tools.js
 
+      - name: List built files (debug)
+        run: |
+          echo "==== data/ tree ===="
+          find data -maxdepth 3 -type f -printf "%p (%k KB)\n" | sort
+
       - name: Deploy to cPanel via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.CPANEL_FTP_HOST }}
           username: ${{ secrets.CPANEL_FTP_USER }}
           password: ${{ secrets.CPANEL_FTP_PASS }}
+          protocol: ftps
+          port: 21
           local-dir: data
           server-dir: public_html/oneflow/data
+          log-level: verbose
           exclude: |
             **/*.map
+            **/.git*
+            **/.DS_Store

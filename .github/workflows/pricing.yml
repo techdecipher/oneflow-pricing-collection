@@ -42,9 +42,9 @@ jobs:
           server: ${{ secrets.CPANEL_FTP_HOST }}
           username: ${{ secrets.CPANEL_FTP_USER }}
           password: ${{ secrets.CPANEL_FTP_PASS }}
-          protocol: ftps
+          protocol: ftp
           port: 21
-          local-dir: data/
+          local-dir: ./data/
           server-dir: public_html/oneflow/data/
           log-level: verbose
           exclude: |

@@ -45,7 +45,7 @@ jobs:
           protocol: ftp
           port: 21
           local-dir: ./data/
-          server-dir: public_html/oneflow/data/
+          server-dir: ./
           log-level: verbose
           exclude: |
             **/*.map

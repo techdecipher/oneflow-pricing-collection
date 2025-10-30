@@ -1,0 +1,42 @@
+name: Refresh OneFlow Data
+on:
+  schedule: [{ cron: "0 */6 * * *" }]
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps (none required, but keep for future)
+        run: echo "No deps"
+
+      - name: Build data
+        run: |
+          mkdir -p data/cloud data/hosting data/tools
+          node scripts/fetch-fx.js
+          node scripts/fetch-aws.js
+          # Optional (turn on when ready)
+          # node scripts/fetch-azure.js
+          # node scripts/fetch-gcp.js
+          # node scripts/fetch-hosting.js
+          # node scripts/fetch-tools.js
+
+      - name: Deploy to cPanel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4
+        with:
+          server: ${{ secrets.CPANEL_FTP_HOST }}
+          username: ${{ secrets.CPANEL_FTP_USER }}
+          password: ${{ secrets.CPANEL_FTP_PASS }}
+          local-dir: data
+          server-dir: public_html/oneflow/data
+          exclude: |
+            **/*.map
